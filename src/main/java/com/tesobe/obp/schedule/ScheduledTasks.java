@@ -73,8 +73,9 @@ public class ScheduledTasks {
     private void pushBot(String blocName, Object args) {
         if(chatfuelUserId == null) {
             logger.debug("userId not setted");
+            return;
         }
-        
+
         String data = new Gson().toJson(args);
         String urlstr = String.format(chatfuelUrl, chatfuelBotId, chatfuelUserId, chatfuelToken, blocName);
         logger.debug("Send POST data to {}", urlstr);
