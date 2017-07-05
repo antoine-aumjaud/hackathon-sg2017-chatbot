@@ -16,8 +16,6 @@ public class ChatbotAccountRessource {
 
     private final Logger log = LoggerFactory.getLogger(ChatbotAccountRessource.class);
 
-    private static final String ENTITY_NAME = "asset";
-
     public ChatbotAccountRessource() {
     }
 
