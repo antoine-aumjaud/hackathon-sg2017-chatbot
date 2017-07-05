@@ -26,7 +26,16 @@ public class ChatbotAccountRessource {
 
         MessageDTO message = new MessageDTO();
         TextDTO texte = new TextDTO();
-        texte.setText("Ceci est un test");
+        texte.setText("Voici la liste de vos comptes:");
+        message.getMessages().add(texte);
+        texte = new TextDTO();
+        texte.setText("compte chèques: + 1 346 €");
+        message.getMessages().add(texte);
+        texte = new TextDTO();
+        texte.setText("épargne immobilier: + 10 493 €");
+        message.getMessages().add(texte);
+        texte = new TextDTO();
+        texte.setText("prêt immobilier: - 139 696 €");
         message.getMessages().add(texte);
         return ResponseEntity.ok(message);
 
