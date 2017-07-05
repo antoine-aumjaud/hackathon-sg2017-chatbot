@@ -11,14 +11,14 @@ import java.util.List;
 @Data
 public class MessageDTO {
 
-    public List<TextDTO> getMessages() {
+    public List getMessages() {
         return messages;
     }
 
-    public void setMessages(List<TextDTO> message) {
+    public void setMessages(List message) {
         this.messages = message;
     }
 
-    public List<TextDTO> messages = new ArrayList<TextDTO>();
+    public List messages = new ArrayList();
 
 }

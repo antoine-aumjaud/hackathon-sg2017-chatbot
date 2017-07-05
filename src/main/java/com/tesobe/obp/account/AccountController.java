@@ -11,18 +11,20 @@ import com.tesobe.obp.auth.DirectAuthenticationService;
 
 @RestController
 public class AccountController {
-    @Autowired
-    private AccountService accountService;
+	@Autowired
+	private AccountService accountService;
 
-    @Autowired
-    private DirectAuthenticationService authenticationService;
+	@Autowired
+	private DirectAuthenticationService authenticationService;
 
-    @Value("${obp.username}")
-    private String username;
+	@Value("${obp.username}")
+	private String username;
 
-    @Value("${obp.password}")
-    private String password;
+	@Value("${obp.password}")
+	private String password;
 
+	@Value("${obp.mock}")
+	private String mock;
 
     @RequestMapping("/account_details")
     public List<Account> fetchAccountsWithDetails() {
