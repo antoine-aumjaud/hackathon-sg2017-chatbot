@@ -59,8 +59,8 @@ public class ChatbotTransactionRessource {
 			texte = new TextDTO();
 			texte.setText("votre salaire (+ 3 000 €) est arrivé hier!.");
 			message.getMessages().add(texte);
-			AttachmentDTO attachmentDTO = AttachmentDTO
-					.createImageAttachement("http://gph.is/2ki7Qrt");
+			AttachmentDTO attachmentDTO = AttachmentDTO.createImageAttachement(
+					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif");
 			message.getMessages().add(attachmentDTO);
 			texte = new TextDTO();
 			texte.setText("vous avez payé votre facture EDF (+ 44,5 €).");
@@ -99,7 +99,7 @@ public class ChatbotTransactionRessource {
 			QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus",
 					"Default Block");
 			message.getMessages().add(quickReplyDTO);
-			return ResponseEntity.ok(message); 
+			return ResponseEntity.ok(message);
 		}
 
 	}
