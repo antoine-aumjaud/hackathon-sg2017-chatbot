@@ -26,12 +26,11 @@ public class ScheduledTasks {
     
     @Value("${chatfuel.token}")
     private String chatfuelToken;
-    
-    @Value("${chatfuel.userId}")
-    private String chatfuelUserId;
-    
+ 
     @Value("${chatfuel.botId}")
     private String chatfuelBotId;
+
+	public static String chatfuelUserId;
 
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
@@ -72,6 +71,10 @@ public class ScheduledTasks {
     }
 
     private void pushBot(String blocName, Object args) {
+        if(chatfuelUserId == null) {
+            logger.debug("userId not setted");
+        }
+        
         String data = new Gson().toJson(args);
         String urlstr = String.format(chatfuelUrl, chatfuelBotId, chatfuelUserId, chatfuelToken, blocName);
         logger.debug("Send POST data to {}", urlstr);
