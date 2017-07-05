@@ -8,15 +8,15 @@ import lombok.Data;
 @Data
 public class AttachmentDTO {
 
-    public AttachmentDetailsDTO getAttachement() {
-        return attachement;
+    public AttachmentDetailsDTO getAttachment() {
+        return attachment;
     }
 
-    public void setAttachement(AttachmentDetailsDTO attachement) {
-        this.attachement = attachement;
+    public void setAttachment(AttachmentDetailsDTO attachment) {
+        this.attachment = attachment;
     }
 
-    private AttachmentDetailsDTO attachement;
+    private AttachmentDetailsDTO attachment;
 
     public static AttachmentDTO createImageAttachement(String uri) {
 
@@ -26,7 +26,7 @@ public class AttachmentDTO {
         detailsDTO.setPayload(urlDTO);
 
         AttachmentDTO attachmentDTO = new AttachmentDTO();
-        attachmentDTO.setAttachement(detailsDTO);
+        attachmentDTO.setAttachment(detailsDTO);
         return attachmentDTO;
     }
 }

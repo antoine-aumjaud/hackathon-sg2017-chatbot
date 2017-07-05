@@ -37,7 +37,7 @@ public class ChatbotTransactionRessource {
         texte = new TextDTO();
         texte.setText("vous avez payé 22 € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.");
         message.getMessages().add(texte);
-        QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus", "Default Block");
+        QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus", "Default answer");
         message.getMessages().add(quickReplyDTO);
         return ResponseEntity.ok(message);
 
