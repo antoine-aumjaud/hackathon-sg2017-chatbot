@@ -5,3 +5,6 @@ build
 .gradle
 .classpath
 .project
+/.idea/
+/target/
+/ElixirChatBot.iml
