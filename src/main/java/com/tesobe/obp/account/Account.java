@@ -14,6 +14,7 @@ public class Account {
 	@JsonProperty("balance")
 	private AccountBalance balance;
 
+	@JsonProperty("type")
 	private String type;
 
 	@JsonProperty("IBAN")
