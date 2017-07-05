@@ -99,7 +99,7 @@ public class ChatbotTransactionRessource {
 			QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus",
 					"Default Block");
 			message.getMessages().add(quickReplyDTO);
-			return ResponseEntity.ok(message);
+			return ResponseEntity.ok(message); 
 		}
 
 	}
