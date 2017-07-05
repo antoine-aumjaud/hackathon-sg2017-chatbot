@@ -1,4 +1,4 @@
-package com.tesobe.obp;
+package com.tesobe.obp.botclient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +21,14 @@ public class ChatbotAccountRessource {
     public ChatbotAccountRessource() {
     }
 
-    @RequestMapping("/test")
+    @RequestMapping("/bot/account")
     public ResponseEntity test() throws URISyntaxException {
 
-        return ResponseEntity.ok("vive Elyxir");
+        MessageDTO message = new MessageDTO();
+        TextDTO texte = new TextDTO();
+        texte.setText("Ceci est un test");
+        message.getMessages().add(texte);
+        return ResponseEntity.ok(message);
 
     }
 
