@@ -29,13 +29,9 @@ public class ChatbotAccountRessource {
         texte.setText("Voici la liste de vos comptes:");
         message.getMessages().add(texte);
         texte = new TextDTO();
-        texte.setText("compte chèques: + 1 346 €");
-        message.getMessages().add(texte);
-        texte = new TextDTO();
-        texte.setText("épargne immobilier: + 10 493 €");
-        message.getMessages().add(texte);
-        texte = new TextDTO();
-        texte.setText("prêt immobilier: - 139 696 €");
+        texte.setText("compte chèques: + 1 346 €\n" +
+                "épargne immobilier: + 10 493 €\n" +
+                "prêt immobilier: - 139 696 €");
         message.getMessages().add(texte);
         return ResponseEntity.ok(message);
 
