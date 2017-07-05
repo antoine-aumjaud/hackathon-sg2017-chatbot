@@ -72,7 +72,7 @@ public class ScheduledTasks {
 
     private void pushBot(String blocName, Object args) {
         if(chatfuelUserId == null) {
-            logger.debug("userId not setted");
+            logger.debug("userId not defined");
             return;
         }
 
