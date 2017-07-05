@@ -24,9 +24,15 @@ public class AccountController {
     private String password;
 
 
-    @RequestMapping("/account")
-    public List<Account> fetchPrivateAccounts() {
+    @RequestMapping("/account_details")
+    public List<Account> fetchAccountsWithDetails() {
         String token = authenticationService.login(username, password);
         return accountService.fetchPrivateAccounts(token, true);
+    }
+
+    @RequestMapping("/account")
+    public List<Account> fetchAccounts() {
+        String token = authenticationService.login(username, password);
+        return accountService.fetchPrivateAccounts(token, false);
     }
 }
