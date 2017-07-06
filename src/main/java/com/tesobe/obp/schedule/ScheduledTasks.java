@@ -69,6 +69,10 @@ public class ScheduledTasks {
 
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
+        if (dataUser.chabotId == null) {
+            logger.debug("userId not defined");
+            return;
+        }
         pushBotPay();
         pushBotAlertSolde();
         pushBotEpargne();
@@ -151,10 +155,6 @@ public class ScheduledTasks {
     }
 
     private void pushBot(String blocName, Object args) {
-        if (dataUser.chabotId == null) {
-            logger.debug("userId not defined");
-            return;
-        }
 
         String data = new Gson().toJson(args);
         String urlstr = String.format(chatfuelUrl, chatfuelBotId, dataUser.chabotId, chatfuelToken, blocName);
