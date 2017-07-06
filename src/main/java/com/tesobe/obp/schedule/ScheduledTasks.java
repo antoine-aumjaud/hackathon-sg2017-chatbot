@@ -88,12 +88,17 @@ public class ScheduledTasks {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 				String token = authenticationService.login(username, password);
 				List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
+				logger.info("On récupère " + accounts.size() + " comptes du pushBotPay.");
 				List<Transaction> transactions = monetaryTransactionService
 						.fetchTransactionList(token, accounts.get(0));
+				logger.info("On récupère " + transactions.size()
+						+ " transactions sur le compte 1");
 				// search for transaction of day and > at 1000 to get salary
 				for (Transaction transaction : transactions) {
 					int currentAmount = transaction.getDetails().getValue().getAmount()
 							.intValue();
+					logger.info("Transaction " + transaction.getDetails().getDescription()
+							+ " montant : " + currentAmount);
 					if (currentAmount > 900
 							&& sdf.format(transaction.getDetails().getCompletedDate())
 									.equals(sdf.format(new Date()))) {
