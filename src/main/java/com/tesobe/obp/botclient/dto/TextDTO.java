@@ -9,12 +9,12 @@ import lombok.Data;
 public class TextDTO implements BaseMessageDTO {
     private final String text;
 
-    public TextDTO(String text) {
-        this.text = text;
-    }
+	public TextDTO(String text) {
+		this.text = text;
+	}
 
-    public String getText() {
-        return text;
-    }
+	public String getText() {
+		return text;
+	}
 
 }
