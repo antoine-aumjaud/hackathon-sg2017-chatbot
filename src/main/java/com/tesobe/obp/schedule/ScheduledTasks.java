@@ -112,7 +112,8 @@ public class ScheduledTasks {
 							&& sdf.format(transaction.getDetails().getCompletedDate())
 									.compareTo(datatimeStart) > 0) {
 						logger.info("Salary found, launch notify");
-						pushBot("notif_pay", new ParameterPay(currentAmount));
+						pushBot("notif_pay", new ParameterPay(currentAmount,
+								"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
 						dataUser.payNotifAlreadyDone = true;
 						break;
 					}
@@ -148,9 +149,16 @@ public class ScheduledTasks {
 
 	private class ParameterPay {
 		private final String pay;
+		private final String urlAttachment;
 
 		public ParameterPay(double pay) {
 			this.pay = dataFormatter.formatAmount(pay);
+			urlAttachment = null;
+		}
+
+		public ParameterPay(double pay, String urlAttachment) {
+			this.pay = dataFormatter.formatAmount(pay);
+			this.urlAttachment = urlAttachment;
 		}
 	}
 
