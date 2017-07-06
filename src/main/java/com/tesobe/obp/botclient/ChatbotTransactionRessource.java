@@ -64,21 +64,22 @@ public class ChatbotTransactionRessource {
 	private String passwordTransaction;
 
 	@RequestMapping("/addTransaction")
-	public ResponseEntity addTransaction(@RequestParam("montant") String montant,
-			@RequestParam("IBAN") String iban,
+	public ResponseEntity addTransaction(@RequestParam("montant") String montant, @RequestParam("IBAN") String iban,
 			@RequestParam("description") String description) {
-		String token = authenticationService.login(usernameTransaction,
-				passwordTransaction);
+
+		log.debug("Set CC montant : " + montant);
+
+		double amount = Double.parseDouble(montant);
+
+		dataUserMock.cc_amount += amount;
+		dataUserMock.epargne_amount -= amount;
+		dataUser.epargneAlreadyDone = false;
+		dataUser.soldeAlerteAlreadyDone = false;
+
+		String token = authenticationService.login(usernameTransaction, passwordTransaction);
 		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
 		monetaryTransactionService.addTransaction(token, account, description, montant);
 
-log.debug("Set CC montant : " + montant);
-		double amount = Double.parseDouble(montant);
-log.debug("Set CC amount : " + amount);
-		dataUserMock.cc_amount += amount;
-		dataUserMock.epargne_amount -= amount;
-        dataUser.epargneAlreadyDone = false;
-        dataUser.soldeAlerteAlreadyDone = false;
 		return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
 	}
 
@@ -87,24 +88,25 @@ log.debug("Set CC amount : " + amount);
 			@RequestParam("transfert_type") String transfertType) {
 		if (mock) {
 			double iamount = Double.parseDouble(amount);
-			if(transfertType.equals("cc")) iamount = -iamount;
-		    dataUserMock.cc_amount += iamount;
-		    dataUserMock.epargne_amount -= iamount;
+			if (transfertType.equals("epargne"))
+				iamount = -iamount;
+			dataUserMock.cc_amount += iamount;
+			dataUserMock.epargne_amount -= iamount;
 		} else {
 			String token = authenticationService.login(username, password);
 			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
 			Account accountCC = accounts.get(0);
 			Account accountEpargne = accounts.get(1);
-			if(transfertType.equals("cc")) { //epargne->cc
-			  monetaryTransactionService.addTransaction(token, accountCC, "automatic cc->epargne", amount);
-			  monetaryTransactionService.addTransaction(token, accountEpargne, "automatic epargne ->cc", "-" + amount);
+			if (transfertType.equals("cc")) { //epargne->cc
+				monetaryTransactionService.addTransaction(token, accountCC, "automatic cc->epargne", amount);
+				monetaryTransactionService.addTransaction(token, accountEpargne, "automatic epargne ->cc",
+						"-" + amount);
+			} else {
+				monetaryTransactionService.addTransaction(token, accountEpargne, "Epargne depuis CC", amount);
+				monetaryTransactionService.addTransaction(token, accountCC, "Epargne", "-" + amount);
 			}
-			else {
-			  monetaryTransactionService.addTransaction(token, accountEpargne, "Epargne depuis CC", amount);
-			  monetaryTransactionService.addTransaction(token, accountCC, "Epargne", "-" + amount);
-			} 
 		}
-        return ResponseEntity.ok("done");
+		return ResponseEntity.ok("done");
 	}
 
 	@RequestMapping("/bot/transaction")
