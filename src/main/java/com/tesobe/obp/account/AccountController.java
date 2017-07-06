@@ -26,9 +26,15 @@ public class AccountController {
 	@Value("${obp.mock}")
 	private String mock;
 
-	@RequestMapping("/account")
-	public List<Account> fetchPrivateAccounts() {
-		String token = authenticationService.login(username, password);
-		return accountService.fetchPrivateAccounts(token, true);
-	}
+    @RequestMapping("/account_details")
+    public List<Account> fetchAccountsWithDetails() {
+        String token = authenticationService.login(username, password);
+        return accountService.fetchPrivateAccounts(token, true);
+    }
+
+    @RequestMapping("/account")
+    public List<Account> fetchAccounts() {
+        String token = authenticationService.login(username, password);
+        return accountService.fetchPrivateAccounts(token, false);
+    }
 }
