@@ -83,6 +83,7 @@ public class ScheduledTasks {
 			if (mock) {
 				double pay = 3600 + Math.random() * 2 * 100;
 				pushBot("notif_pay", new ParameterPay(pay));
+				dataUser.payNotifAlreadyDone = true;
 			} else {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 				String token = authenticationService.login(username, password);
@@ -98,18 +99,23 @@ public class ScheduledTasks {
 									.equals(sdf.format(new Date()))) {
 						logger.info("Salary found, launch notify");
 						pushBot("notif_pay", new ParameterPay(currentAmount));
+						dataUser.payNotifAlreadyDone = true;
 					}
 				}
 			}
-			dataUser.payNotifAlreadyDone = true;
+
 		}
 	}
 
 	private void pushBotAlertSolde() {
 		if (!dataUser.soldeAlerteAlreadyDone) {
-			if (mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
-				pushBot("notif_alert_solde", new ParameterAlert(dataUserMock.cc_seuil,
-						dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+			if (mock) {
+				if (dataUserMock.cc_amount < dataUserMock.cc_seuil) {
+					pushBot("notif_alert_solde", new ParameterAlert(dataUserMock.cc_seuil,
+							dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+				}
+			} else {
+
 			}
 			dataUser.soldeAlerteAlreadyDone = true;
 		}
