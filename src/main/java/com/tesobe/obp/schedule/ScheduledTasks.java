@@ -31,42 +31,41 @@ import com.tesobe.obp.utils.DataFormatter;
 @Component
 public class ScheduledTasks {
 
-	private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
-	@Value("${obp.username}")
-	private String username;
+    @Value("${obp.username}")
+    private String username;
 
-	@Value("${obp.password}")
-	private String password;
+    @Value("${obp.password}")
+    private String password;
 
-	@Value("${chatfuel.url}")
-	private String chatfuelUrl;
+    @Value("${chatfuel.url}")
+    private String chatfuelUrl;
 
-	@Value("${chatfuel.token}")
-	private String chatfuelToken;
+    @Value("${chatfuel.token}")
+    private String chatfuelToken;
 
-	@Value("${chatfuel.botId}")
-	private String chatfuelBotId;
+    @Value("${chatfuel.botId}")
+    private String chatfuelBotId;
 
-	@Value("${obp.mock}")
-	private boolean mock;
+    @Value("${obp.mock}")
+    private boolean mock;
 
-	@Autowired
-	private DataUserMock dataUserMock;
+    @Autowired
+    private DataUserMock dataUserMock;
 
-	@Autowired
-	private DataUser dataUser;
+    @Autowired
+    private DataUser dataUser;
 
-	@Autowired
-	private DataFormatter dataFormatter;
+    @Autowired
+    private DataFormatter dataFormatter;
 
-	@Autowired
-	private DirectAuthenticationService authenticationService;
-	@Autowired
-	private AccountService accountService;
-	@Autowired
-	private MonetaryTransactionsService monetaryTransactionService;
-
+    @Autowired
+    private DirectAuthenticationService authenticationService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private MonetaryTransactionsService monetaryTransactionService;
 
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
@@ -77,30 +76,42 @@ public class ScheduledTasks {
 
     private void pushBotPay() {
         if(dataUser.payNotifAlreadyDone) {
-            if(mock) {
+            if (mock) {
                 double pay = 3600 + Math.random() * 2 * 100;
                 pushBot("notif_pay", new ParameterPay(pay));
+            } else {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String token = authenticationService.login(username, password);
+                List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
+                List<Transaction> transactions = monetaryTransactionService.fetchTransactionList(token,
+                        accounts.get(0));
+                // search for transaction of day and > at 1000 to get salary
+                for (Transaction transaction : transactions) {
+                    int currentAmount = transaction.getDetails().getValue().getAmount().intValue();
+                    if (currentAmount > 2000
+                            && sdf.format(transaction.getDetails().getCompletedDate()).equals(sdf.format(new Date()))) {
+                        logger.info("Salary found, launch notify");
+                        pushBot("notif_pay", new ParameterPay(currentAmount));
+                    }
+                }
             }
-            else {
-                //if(checkForSalary())
-            }
-            dataUser.payNotifAlreadyDone = false;
+            dataUser.payNotifAlreadyDone = true;
         }
     }
 
     private void pushBotAlertSolde() {
-        if(!dataUser.soldeAlerteAlreadyDone) {
-            if(mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
-                pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil, 
-                    dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+        if (!dataUser.soldeAlerteAlreadyDone) {
+            if (mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
+                pushBot("notif_alert_solde", new ParameterAlert(dataUserMock.cc_seuil, dataUserMock.cc_amount,
+                        dataUserMock.epargne_amount, 100));
             }
             dataUser.soldeAlerteAlreadyDone = true;
         }
     }
 
     private void pushBotEpargne() {
-        if(!dataUser.epargneAlreadyDone) {
-            if(mock && dataUserMock.cc_amount > 500) {
+        if (!dataUser.epargneAlreadyDone) {
+            if (mock && dataUserMock.cc_amount > 500) {
                 pushBot("notif_epargne", new ParameterEpargne(dataUserMock.cc_amount, 500));
             }
             dataUser.epargneAlreadyDone = true;
@@ -109,23 +120,28 @@ public class ScheduledTasks {
 
     private class ParameterPay {
         private final String pay;
+
         public ParameterPay(double pay) {
             this.pay = dataFormatter.formatAmount(pay);
         }
     }
+
     private class ParameterEpargne {
         private final String ccAmount;
         private final String transfertAmount;
+
         public ParameterEpargne(double ccAmount, double transfertAmount) {
             this.ccAmount = dataFormatter.formatAmount(ccAmount);
             this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
         }
     }
+
     private class ParameterAlert {
         private final String seuil;
         private final String ccAmount;
         private final String epargneAmount;
         private final String transfertAmount;
+
         public ParameterAlert(double seuil, double ccAmount, double epargneAmount, double transfertAmount) {
             this.seuil = dataFormatter.formatAmount(seuil);
             this.ccAmount = dataFormatter.formatAmount(ccAmount);
@@ -135,7 +151,7 @@ public class ScheduledTasks {
     }
 
     private void pushBot(String blocName, Object args) {
-        if(dataUser.chabotId == null) {
+        if (dataUser.chabotId == null) {
             logger.debug("userId not defined");
             return;
         }
@@ -177,26 +193,5 @@ public class ScheduledTasks {
         }
         return result.toString();
     }
-
-	private void checkForSalary() {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			String token = authenticationService.login(username, password);
-			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
-			List<Transaction> transactions = monetaryTransactionService
-					.fetchTransactionList(token, accounts.get(0));
-			int currentAmount;
-			// search for transaction of day and > at 1000 to get salary
-			for (Transaction transaction : transactions) {
-				currentAmount = transaction.getDetails().getValue().getAmount()
-						.intValue();
-				if (currentAmount > 1000
-						&& sdf.format(transaction.getDetails().getCompletedDate())
-								.equals(sdf.format(new Date()))) {
-					logger.info("Salary found, launch notify");
-					pushBot("notif_pay", new ParameterPay(currentAmount));
-					return true;
-				}
-			}
-	}
 
 }
