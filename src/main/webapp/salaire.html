@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>SG - salaires</title>
+<style>
+td {margin: 10px; padding: 20px;}
+body, input, select {
+	font-family: Arial;
+	font-size:  22px;
+}
+h1 {
+	background-color: red;
+	color:white;
+	padding-left: 10px;
+}
+</style>
+<link rel="icon" type="image/png" href="https://professionnels.societegenerale.fr/favicon.ico" />
+</head>
+<body>
+	<img src="https://static.societegenerale.fr//pri/PRI/Multimedias/logo_et_copyright/logo_header_refonte_2010.gif">
+	<h1>Paie - Virement</h1>
+	<form method="post" action="/addTransaction">
+
+        <table>
+			<tr>
+				<td>Destinataire</td>
+		        <td>
+					<select>
+			  		<option>Jonathan Wadin</option>
+				 	 </select>
+				</td>
+  		    </tr>
+			<tr>
+				<td>Montant</td>
+		        <td><input type="text" name="montant" value="990.21"></td>
+  		    </tr>
+			<tr>
+				<td>Description</td>
+		        <td><input type="text" name="description" value="Salaire 07/07"></td>
+			</tr>
+        </table>
+		<br>
+		<input type="submit" value="Effectuer le virement">
+	</form>
+		<br>
+		<br>
+		<p style="text-align:center; center; width:100%">
+	<img  src="https://static.societegenerale.fr/pri/PRI/Repertoire_par_type_de_contenus/Type_de_contenu/01-Pages/00-perennes/02-Devenir_Client/ouvrir_un_compte_2016/img/n2g_so1390-header.jpg">
+		</p>
+</body>
+</html>
