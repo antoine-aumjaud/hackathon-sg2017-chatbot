@@ -47,7 +47,7 @@ public class MonetaryTransactionsService {
 		String viewId = getFirstViewOfAccount(token, account);
 		String addTransactionsUrl = String.format(
 				"%s/banks/%s/accounts/%s/%s/transaction-request-types/SANDBOX_TAN/transaction-requests",
-				apiUrl, account.getBankId(), account.getId(), viewId);
+				apiUrl, "socgen.31.fr.fr", "123456789", viewId);
 		LOGGER.info("Add transaction URL : " + addTransactionsUrl);
 		HttpEntity<TransactionRequest> req = prepareTransactionRequest(token, account,
 				desc, amount);
@@ -59,7 +59,8 @@ public class MonetaryTransactionsService {
 
 	private String getFirstViewOfAccount(String token, Account account) {
 		String viewUrl = String.format("%s/banks/%s/accounts/%s/views", apiUrl,
-				account.getBankId(), account.getId());
+				"socgen.31.fr.fr", "123456789");
+		LOGGER.info("View account URL " + viewUrl);
 		HttpEntity<Void> req = prepareAuthRequest(token);
 		Views views = restTemplate.exchange(viewUrl, HttpMethod.GET, req, Views.class)
 				.getBody();

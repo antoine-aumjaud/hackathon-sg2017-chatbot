@@ -51,11 +51,18 @@ public class ChatbotTransactionRessource {
 	@Value("${obp.password}")
 	private String password;
 
+	@Value("${obp.transactionMock.username}")
+	private String usernameTransaction;
+
+	@Value("${obp.transactionMock.password}")
+	private String passwordTransaction;
+
 	@RequestMapping("/addTransaction")
 	public ResponseEntity addTransaction(@RequestParam("montant") String montant,
 			@RequestParam("IBAN") String iban,
 			@RequestParam("description") String description) {
-		String token = authenticationService.login(username, password);
+		String token = authenticationService.login(usernameTransaction,
+				passwordTransaction);
 		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
 		monetaryTransactionService.addTransaction(token, account, description, montant);
 		return ResponseEntity.ok(
