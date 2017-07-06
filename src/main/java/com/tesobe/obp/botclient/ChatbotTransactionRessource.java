@@ -68,19 +68,20 @@ public class ChatbotTransactionRessource {
 			@RequestParam("description") String description) {
 
 		log.debug("Set CC montant : " + montant);
-if(mock) {
-		double amount = Double.parseDouble(montant);
+		if (mock) {
+			double amount = Double.parseDouble(montant);
 
-		dataUserMock.cc_amount += amount;
-		dataUserMock.epargne_amount -= amount;
-		dataUser.epargneAlreadyDone = false;
-		dataUser.soldeAlerteAlreadyDone = false;
-} else {
-		String token = authenticationService.login(usernameTransaction, passwordTransaction);
-		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
-		monetaryTransactionService.addTransaction(token, account, description, montant);
+			dataUserMock.cc_amount += amount;
+			dataUserMock.epargne_amount -= amount;
+			dataUser.epargneAlreadyDone = false;
+			dataUser.soldeAlerteAlreadyDone = false;
+		} else {
+			String token = authenticationService.login(usernameTransaction, passwordTransaction);
+			Account account = accountService.fetchPrivateAccounts(token, true).get(0);
+			monetaryTransactionService.addTransaction(token, account, description, montant);
 
-		return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
+			return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
+		}
 	}
 
 	@RequestMapping("/bot/transfert")
