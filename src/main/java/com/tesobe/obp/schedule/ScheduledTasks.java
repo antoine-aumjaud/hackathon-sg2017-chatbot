@@ -7,6 +7,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,23 +19,34 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
+import com.tesobe.obp.account.Account;
+import com.tesobe.obp.account.AccountService;
+import com.tesobe.obp.account.Transaction;
+import com.tesobe.obp.auth.DirectAuthenticationService;
 import com.tesobe.obp.botclient.DataUser;
 import com.tesobe.obp.botclient.DataUserMock;
+import com.tesobe.obp.transaction.MonetaryTransactionsService;
 import com.tesobe.obp.utils.DataFormatter;
 
 @Component
 public class ScheduledTasks {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+	private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
-    @Value("${chatfuel.url}")
-    private String chatfuelUrl;
-    
-    @Value("${chatfuel.token}")
-    private String chatfuelToken;
- 
-    @Value("${chatfuel.botId}")
-    private String chatfuelBotId;
+	@Value("${obp.username}")
+	private String username;
+
+	@Value("${obp.password}")
+	private String password;
+
+	@Value("${chatfuel.url}")
+	private String chatfuelUrl;
+
+	@Value("${chatfuel.token}")
+	private String chatfuelToken;
+
+	@Value("${chatfuel.botId}")
+	private String chatfuelBotId;
 
 	@Value("${obp.mock}")
 	private boolean mock;
@@ -46,6 +60,14 @@ public class ScheduledTasks {
 	@Autowired
 	private DataFormatter dataFormatter;
 
+	@Autowired
+	private DirectAuthenticationService authenticationService;
+	@Autowired
+	private AccountService accountService;
+	@Autowired
+	private MonetaryTransactionsService monetaryTransactionService;
+
+
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
         pushBotPay();
@@ -58,8 +80,11 @@ public class ScheduledTasks {
             if(mock) {
                 double pay = 3600 + Math.random() * 2 * 100;
                 pushBot("notif_pay", new ParameterPay(pay));
-                dataUser.payNotifAlreadyDone = false;
             }
+            else {
+                //if(checkForSalary())
+            }
+            dataUser.payNotifAlreadyDone = false;
         }
     }
 
@@ -68,8 +93,8 @@ public class ScheduledTasks {
             if(mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
                 pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil, 
                     dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
-                dataUser.soldeAlerteAlreadyDone = true;
             }
+            dataUser.soldeAlerteAlreadyDone = true;
         }
     }
 
@@ -77,8 +102,8 @@ public class ScheduledTasks {
         if(!dataUser.epargneAlreadyDone) {
             if(mock && dataUserMock.cc_amount > 500) {
                 pushBot("notif_epargne", new ParameterEpargne(dataUserMock.cc_amount, 500));
-                dataUser.epargneAlreadyDone = true;
             }
+            dataUser.epargneAlreadyDone = true;
         }
     }
 
@@ -152,4 +177,26 @@ public class ScheduledTasks {
         }
         return result.toString();
     }
+
+	private void checkForSalary() {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			String token = authenticationService.login(username, password);
+			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
+			List<Transaction> transactions = monetaryTransactionService
+					.fetchTransactionList(token, accounts.get(0));
+			int currentAmount;
+			// search for transaction of day and > at 1000 to get salary
+			for (Transaction transaction : transactions) {
+				currentAmount = transaction.getDetails().getValue().getAmount()
+						.intValue();
+				if (currentAmount > 1000
+						&& sdf.format(transaction.getDetails().getCompletedDate())
+								.equals(sdf.format(new Date()))) {
+					logger.info("Salary found, launch notify");
+					pushBot("notif_pay", new ParameterPay(currentAmount));
+					return true;
+				}
+			}
+	}
+
 }
