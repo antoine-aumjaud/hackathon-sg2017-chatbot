@@ -80,8 +80,8 @@ public class ChatbotTransactionRessource {
 			Account account = accountService.fetchPrivateAccounts(token, true).get(0);
 			monetaryTransactionService.addTransaction(token, account, description, montant);
 
-			return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
 		}
+			return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
 	}
 
 	@RequestMapping("/bot/transfert")
