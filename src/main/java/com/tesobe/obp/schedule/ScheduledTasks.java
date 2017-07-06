@@ -159,7 +159,6 @@ public class ScheduledTasks {
         String data = new Gson().toJson(args);
         String urlstr = String.format(chatfuelUrl, chatfuelBotId, dataUser.chabotId, chatfuelToken, blocName);
         logger.debug("Send POST data to {}", urlstr);
-        //chatfuel.url=https://api.chatfuel.com/bots/%s/users/%s/send?chatfuel_token=%s&chatfuel_block_name=%s
 
         byte[] postData = data.getBytes(StandardCharsets.UTF_8);
         try {
