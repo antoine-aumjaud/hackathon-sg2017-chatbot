@@ -57,13 +57,14 @@ public class ChatbotTransactionRessource {
 		if (mock.equals("true")) {
 
 			texte = new TextDTO();
-			texte.setText("votre salaire (+ 3 000 €) est arrivé hier!.");
+			texte.setText("votre salaire (+ 3 205,3 €) est arrivé hier!.");
 			message.getMessages().add(texte);
 			AttachmentDTO attachmentDTO = AttachmentDTO.createImageAttachement(
 					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif");
 			message.getMessages().add(attachmentDTO);
 			texte = new TextDTO();
-			texte.setText("vous avez payé votre facture EDF (+ 44,5 €).");
+			texte.setText(
+					"vous avez payé votre facture EDF 44,5 €. Elle est en baisse par rapport au mois dernier (39,5 €)");
 			message.getMessages().add(texte);
 			texte = new TextDTO();
 			texte.setText(

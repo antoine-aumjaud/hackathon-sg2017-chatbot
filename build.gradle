@@ -37,4 +37,9 @@ test {
     testLogging {
         events "passed", "skipped", "failed", "standardError"
     }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.5'
+}
+    
 }
