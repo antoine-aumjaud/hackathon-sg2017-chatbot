@@ -72,7 +72,7 @@ public class ChatbotTransactionRessource {
 			double amount = Double.parseDouble(montant);
 
 			dataUserMock.cc_amount += amount;
-			dataUserMock.epargne_amount -= amount;
+			//dataUserMock.epargne_amount -= amount;
 			dataUser.epargneAlreadyDone = false;
 			dataUser.soldeAlerteAlreadyDone = false;
 		} else {
