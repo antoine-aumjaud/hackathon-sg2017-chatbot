@@ -8,7 +8,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -67,6 +66,9 @@ public class ScheduledTasks {
 	@Autowired
 	private MonetaryTransactionsService monetaryTransactionService;
 
+	@Value("${obp.datatime.start}")
+	private String datatimeStart;
+
 	@Scheduled(fixedRate = 10 * 1000)
 	public void reportCurrentTime() {
 		if (dataUser.chabotId == null) {
@@ -102,7 +104,7 @@ public class ScheduledTasks {
 							+ " montant : " + currentAmount);
 					if (currentAmount > 900
 							&& sdf.format(transaction.getDetails().getCompletedDate())
-									.equals(sdf.format(new Date()))) {
+									.compareTo(datatimeStart) > 1) {
 						logger.info("Salary found, launch notify");
 						pushBot("notif_pay", new ParameterPay(currentAmount));
 						dataUser.payNotifAlreadyDone = true;
