@@ -1,12 +1,6 @@
 
 package com.tesobe.obp.transactionRequest.pojo;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,8 +15,6 @@ public class TransactionRequest {
 	private TransactionValue value;
 	@JsonProperty("description")
 	private String description;
-	@JsonIgnore
-	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 	@JsonProperty("to")
 	public To getTo() {
@@ -53,15 +45,4 @@ public class TransactionRequest {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
-	@JsonAnyGetter
-	public Map<String, Object> getAdditionalProperties() {
-		return this.additionalProperties;
-	}
-
-	@JsonAnySetter
-	public void setAdditionalProperty(String name, Object value) {
-		this.additionalProperties.put(name, value);
-	}
-
 }
