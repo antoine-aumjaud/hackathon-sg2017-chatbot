@@ -10,11 +10,14 @@ import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
+import com.tesobe.obp.botclient.DataUserMock;
+import com.tesobe.obp.utils.DataFormatter;
 
 @Component
 public class ScheduledTasks {
@@ -31,6 +34,13 @@ public class ScheduledTasks {
     private String chatfuelBotId;
 
 	public static String chatfuelUserId; //1194160284036837
+
+	@Autowired
+	private DataUserMock dataUserMock;
+
+	@Autowired
+	private DataFormatter dataFormatter;
+
 
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
@@ -63,10 +73,9 @@ public class ScheduledTasks {
     }
 
     private class ParameterPay {
-        private final double pay;
-
+        private final String pay;
         public ParameterPay(double pay) {
-            this.pay = pay;
+            this.pay = dataFormatter.formatAmount(pay);
         }
     }
 
