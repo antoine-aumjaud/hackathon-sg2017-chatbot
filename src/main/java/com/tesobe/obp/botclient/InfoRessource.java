@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tesobe.obp.schedule.ScheduledTasks;
+import com.tesobe.obp.botclient.dto.AttachmentDTO;
+import com.tesobe.obp.botclient.dto.MessageDTO;
 
 @RestController
 public class InfoRessource {
@@ -25,4 +26,11 @@ public class InfoRessource {
 		return ResponseEntity.ok("");
 	}
 
+	@RequestMapping("/bot/gifSalary")
+	public ResponseEntity getHappyGif() {
+		MessageDTO message = new MessageDTO();
+		message.addMessage(AttachmentDTO.createImageAttachement(
+				"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
+		return ResponseEntity.ok(message);
+	}
 }
