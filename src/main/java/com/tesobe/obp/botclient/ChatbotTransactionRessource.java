@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tesobe.obp.account.Account;
@@ -43,6 +44,17 @@ public class ChatbotTransactionRessource {
 	private String password;
 
 	public ChatbotTransactionRessource() {
+	}
+
+	@RequestMapping("/addTransaction")
+	public ResponseEntity addTransaction(@RequestParam("montant") String montant,
+			@RequestParam("IBAN") String iban,
+			@RequestParam("description") String description) {
+		String token = authenticationService.login(username, password);
+		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
+		monetaryTransactionService.addTransaction(token, account, description, montant);
+		return ResponseEntity.ok(
+				"<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte</h1>");
 	}
 
 	@RequestMapping("/bot/transaction")

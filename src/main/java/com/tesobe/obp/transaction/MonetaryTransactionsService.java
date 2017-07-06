@@ -1,8 +1,8 @@
 package com.tesobe.obp.transaction;
 
-import com.tesobe.obp.account.Account;
-import com.tesobe.obp.account.Transaction;
-import lombok.Data;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.joda.money.Money;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -11,42 +11,102 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import com.tesobe.obp.account.Account;
+import com.tesobe.obp.account.Transaction;
+import com.tesobe.obp.account.Views;
+import com.tesobe.obp.transactionRequest.pojo.To;
+import com.tesobe.obp.transactionRequest.pojo.TransactionRequest;
+import com.tesobe.obp.transactionRequest.pojo.TransactionValue;
+
+import lombok.Data;
 
 @Component
 public class MonetaryTransactionsService {
 
-    @Value("${obp.api.versionedUrl}")
-    private String apiUrl;
+	@Value("${obp.api.versionedUrl}")
+	private String apiUrl;
 
-    private RestTemplate restTemplate = new RestTemplate();
+	private RestTemplate restTemplate = new RestTemplate();
 
-    public List<Transaction> fetchTransactionList(String token, Account account) {
-        String allTransactionsUrl = String.format("%s/banks/%s/accounts/%s/owner/transactions", apiUrl, account.getBankId(), account.getId());
-        HttpEntity<Void> req = prepareAuthRequest(token);
-        Transactions transactions = restTemplate.exchange(allTransactionsUrl, HttpMethod.GET, req, Transactions.class).getBody();
-        return transactions.getTransactions();
-    }
+	private static final Logger LOGGER = Logger
+			.getLogger(MonetaryTransactionsService.class);
 
-    public Transaction getTransactionById(String token, Account account, String txId) {
-        String txUrl = String.format("%s/banks/%s/accounts/%s/owner/transactions/%s/transaction", apiUrl, account.getBankId(), account.getId(), txId);
-        HttpEntity<Void> req = prepareAuthRequest(token);
-        return restTemplate.exchange(txUrl, HttpMethod.GET, req, Transaction.class).getBody();
-    }
+	public List<Transaction> fetchTransactionList(String token, Account account) {
+		String allTransactionsUrl = String.format(
+				"%s/banks/%s/accounts/%s/owner/transactions", apiUrl, account.getBankId(),
+				account.getId());
+		HttpEntity<Void> req = prepareAuthRequest(token);
+		Transactions transactions = restTemplate
+				.exchange(allTransactionsUrl, HttpMethod.GET, req, Transactions.class)
+				.getBody();
+		return transactions.getTransactions();
+	}
 
-    private HttpEntity<Void> prepareAuthRequest(String token) {
-        HttpHeaders authHeaders = new HttpHeaders();
-        String dlHeader = String.format("DirectLogin token=%s", token);
-        authHeaders.add(HttpHeaders.AUTHORIZATION, dlHeader);
-        return new HttpEntity<>(null, authHeaders);
-    }
+	public List<Transaction> addTransaction(String token, Account account, String desc,
+			String amount) {
+		String viewId = getFirstViewOfAccount(token, account);
+		String addTransactionsUrl = String.format(
+				"%s/banks/%s/accounts/%s/%s/transaction-request-types/SANDBOX_TAN/transaction-requests",
+				apiUrl, account.getBankId(), account.getId(), viewId);
+		LOGGER.info("Add transaction URL : " + addTransactionsUrl);
+		HttpEntity<TransactionRequest> req = prepareTransactionRequest(token, account,
+				desc, amount);
+		Transactions transactions = restTemplate
+				.exchange(addTransactionsUrl, HttpMethod.POST, req, Transactions.class)
+				.getBody();
+		return transactions.getTransactions();
+	}
 
-    public void transferMoney(String token, Account sourceAccount, Account targetAccount, Money amount) {
+	private String getFirstViewOfAccount(String token, Account account) {
+		String viewUrl = String.format("%s/banks/%s/accounts/%s/views", apiUrl,
+				account.getBankId(), account.getId());
+		HttpEntity<Void> req = prepareAuthRequest(token);
+		Views views = restTemplate.exchange(viewUrl, HttpMethod.GET, req, Views.class)
+				.getBody();
+		return views.getViews().get(0).getId();
+	}
 
-    }
+	public Transaction getTransactionById(String token, Account account, String txId) {
+		String txUrl = String.format(
+				"%s/banks/%s/accounts/%s/owner/transactions/%s/transaction", apiUrl,
+				account.getBankId(), account.getId(), txId);
+		HttpEntity<Void> req = prepareAuthRequest(token);
+		return restTemplate.exchange(txUrl, HttpMethod.GET, req, Transaction.class)
+				.getBody();
+	}
 
-    @Data
-    private static class Transactions {
-        private List<Transaction> transactions;
-    }
+	private HttpEntity<TransactionRequest> prepareTransactionRequest(String token,
+			Account account, String desc, String amount) {
+		TransactionRequest request = new TransactionRequest();
+		request.setDescription(desc);
+		To toTransaction = new To();
+		toTransaction.setAccountId(account.getId());
+		toTransaction.setBankId(account.getBankId());
+		request.setTo(toTransaction);
+		TransactionValue value = new TransactionValue();
+		value.setAmount(amount);
+		value.setCurrency("EUR");
+		request.setValue(value);
+		HttpHeaders authHeaders = new HttpHeaders();
+		String dlHeader = String.format("DirectLogin token=%s", token);
+		authHeaders.add(HttpHeaders.AUTHORIZATION, dlHeader);
+		return new HttpEntity<>(request, authHeaders);
+	}
+
+	private HttpEntity<Void> prepareAuthRequest(String token) {
+		HttpHeaders authHeaders = new HttpHeaders();
+		String dlHeader = String.format("DirectLogin token=%s", token);
+		authHeaders.add(HttpHeaders.AUTHORIZATION, dlHeader);
+		return new HttpEntity<>(null, authHeaders);
+	}
+
+	public void transferMoney(String token, Account sourceAccount, Account targetAccount,
+			Money amount) {
+
+	}
+
+	@Data
+	private static class Transactions {
+		private List<Transaction> transactions;
+	}
 }
