@@ -103,13 +103,13 @@ public class ScheduledTasks {
     }
 
     private void pushBot(String blocName, Object args) {
-        if(chatfuelUserId == null) {
+        if(dataUser.chabotId == null) {
             logger.debug("userId not defined");
             return;
         }
 
         String data = new Gson().toJson(args);
-        String urlstr = String.format(chatfuelUrl, chatfuelBotId, chatfuelUserId, chatfuelToken, blocName);
+        String urlstr = String.format(chatfuelUrl, chatfuelBotId, dataUser.chabotId, chatfuelToken, blocName);
         logger.debug("Send POST data to {}", urlstr);
         //chatfuel.url=https://api.chatfuel.com/bots/%s/users/%s/send?chatfuel_token=%s&chatfuel_block_name=%s
 
