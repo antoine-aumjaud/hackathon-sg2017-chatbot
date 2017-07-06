@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataFormatter {
 
-	@Test
+//	@Test
 	public void main()
 	{
 //	assertEquals("11,21", System.out.println(decimalFormater.format(11.219)) );
