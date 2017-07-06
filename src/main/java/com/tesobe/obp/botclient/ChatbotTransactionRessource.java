@@ -42,6 +42,12 @@ public class ChatbotTransactionRessource {
 	@Autowired
 	private DataFormatter dataFormatter;
 
+	@Autowired
+	private DataUserMock dataUserMock;
+
+	@Autowired
+	private DataUser dataUser;
+
 	@Value("${obp.mock}")
 	private boolean mock;
 
@@ -65,50 +71,73 @@ public class ChatbotTransactionRessource {
 				passwordTransaction);
 		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
 		monetaryTransactionService.addTransaction(token, account, description, montant);
-		return ResponseEntity.ok(
-				"<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
+
+log.debug("Set CC montant : " + montant);
+		double amount = Double.parseDouble(montant);
+log.debug("Set CC amount : " + amount);
+		dataUserMock.cc_amount += amount;
+		dataUserMock.epargne_amount -= amount;
+        dataUser.epargneAlreadyDone = false;
+        dataUser.soldeAlerteAlreadyDone = false;
+		return ResponseEntity.ok("<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
+	}
+
+	@RequestMapping("/bot/transfert")
+	public ResponseEntity doTransfer(@RequestParam("amount") String amount,
+			@RequestParam("transfert_type") String transfertType) {
+		if (mock) {
+			double iamount = Double.parseDouble(amount);
+			if(transfertType.equals("cc")) iamount = -iamount;
+		    dataUserMock.cc_amount += iamount;
+		    dataUserMock.epargne_amount -= iamount;
+		} else {
+			String token = authenticationService.login(username, password);
+			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
+			Account accountCC = accounts.get(0);
+			Account accountEpargne = accounts.get(1);
+			if(transfertType.equals("cc")) { //epargne->cc
+			  monetaryTransactionService.addTransaction(token, accountCC, "automatic cc->epargne", amount);
+			  monetaryTransactionService.addTransaction(token, accountEpargne, "automatic epargne ->cc", "-" + amount);
+			}
+			else {
+			  monetaryTransactionService.addTransaction(token, accountEpargne, "Epargne depuis CC", amount);
+			  monetaryTransactionService.addTransaction(token, accountCC, "Epargne", "-" + amount);
+			} 
+		}
+        return ResponseEntity.ok("done");
 	}
 
 	@RequestMapping("/bot/transaction")
-	public ResponseEntity test() throws URISyntaxException {
+	public ResponseEntity transactionList() throws URISyntaxException {
 		MessageDTO message = new MessageDTO();
-		message.addText(
-				"Voici la liste des dernières transactions sur votre compte courant :\n");
+		message.addText("Voici la liste des dernières transactions sur votre compte courant :\n");
 		if (mock) {
-			message.addText("votre salaire (" + dataFormatter.formatAmount(3000)
-					+ " €) est arrivé hier!.");
-			message.addMessage(AttachmentDTO.createImageAttachement(
-					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
-			message.addText("vous avez payé votre facture EDF ("
-					+ dataFormatter.formatAmount(44.5) + " €).");
-			message.addText("vous avez payé " + dataFormatter.formatAmount(79)
-					+ " € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.vous avez payé 22 € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.");
+			message.addText("- votre salaire (" + dataFormatter.formatAmount(3000) + " €) est arrivé hier!.");
 			message.addMessage(
-					new QuickReplyDTO("ajouter aux tiers connus", "Default Block"));
+					AttachmentDTO.createImageAttachement("https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
+			message.addText("- vous avez payé votre facture EDF (" + dataFormatter.formatAmount(44.5) + " €).");
+			message.addText("- vous avez payé " + dataFormatter.formatAmount(79) + " € hier à 'Histoire De'.");
+			//message.addText("C'est votre première transaction avec ce tiers.");
+			//message.addMessage(new QuickReplyDTO("Ajouter aux tiers connus", "add_tiers"));
 			return ResponseEntity.ok(message);
 		} else {
 			String token = authenticationService.login(username, password);
 			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
-			List<Transaction> transactions = monetaryTransactionService
-					.fetchTransactionList(token, accounts.get(0));
+			List<Transaction> transactions = monetaryTransactionService.fetchTransactionList(token, accounts.get(0));
 			for (int i = 0; ((i < transactions.size()) && (i < 3)); i++) {
-				String currentDate = dataFormatter
-						.formatDate(transactions.get(i).getDetails().getCompletedDate());
+				String currentDate = dataFormatter.formatDate(transactions.get(i).getDetails().getCompletedDate());
 				// if > at 1000 then put gif
 				message.addText(currentDate + " : " //
 						+ transactions.get(i).getDetails().getDescription() //
 						+ " (" //
-						+ dataFormatter.formatAmount(
-								transactions.get(i).getDetails().getValue().getAmount()) //
+						+ dataFormatter.formatAmount(transactions.get(i).getDetails().getValue().getAmount()) //
 						+ ")"); //
-				if (transactions.get(i).getDetails().getValue().getAmount().toBigInteger()
-						.intValue() > 1000) {
-					message.addMessage(AttachmentDTO.createImageAttachement(
-							"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
+				if (transactions.get(i).getDetails().getValue().getAmount().toBigInteger().intValue() > 1000) {
+					message.addMessage(AttachmentDTO
+							.createImageAttachement("https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
 				}
 			}
-			message.addMessage(
-					new QuickReplyDTO("ajouter aux tiers connus", "Default Block"));
+			message.addMessage(new QuickReplyDTO("ajouter aux tiers connus", "Default Block"));
 			return ResponseEntity.ok(message);
 		}
 	}

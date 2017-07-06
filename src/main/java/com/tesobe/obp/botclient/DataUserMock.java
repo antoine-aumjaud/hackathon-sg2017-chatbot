@@ -7,7 +7,7 @@ public class DataUserMock {
 
     public double cc_amount             = 1346.83;
     public double epargne_amount        = 5600;
-    public double credit_amount         = 149696.12;
+    public double credit_amount         = -149696.12;
     
     public double cc_last_pay           = 2200.15;
     public double cc_last_invoice_edf   = 123.10;
