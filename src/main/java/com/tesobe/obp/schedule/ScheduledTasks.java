@@ -79,7 +79,8 @@ public class ScheduledTasks {
 	}
 
 	private void pushBotPay() {
-		if (dataUser.payNotifAlreadyDone) {
+		logger.info("Enter pushBotPay, payNotify : " + dataUser.payNotifAlreadyDone);
+		if (!dataUser.payNotifAlreadyDone) {
 			if (mock) {
 				double pay = 3600 + Math.random() * 2 * 100;
 				pushBot("notif_pay", new ParameterPay(pay));
