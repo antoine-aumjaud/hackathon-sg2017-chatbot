@@ -23,12 +23,21 @@ import com.tesobe.obp.account.Account;
 import com.tesobe.obp.account.AccountService;
 import com.tesobe.obp.account.Transaction;
 import com.tesobe.obp.auth.DirectAuthenticationService;
+import com.tesobe.obp.botclient.DataUser;
+import com.tesobe.obp.botclient.DataUserMock;
 import com.tesobe.obp.transaction.MonetaryTransactionsService;
+import com.tesobe.obp.utils.DataFormatter;
 
 @Component
 public class ScheduledTasks {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+
+	@Value("${obp.username}")
+	private String username;
+
+	@Value("${obp.password}")
+	private String password;
 
 	@Value("${chatfuel.url}")
 	private String chatfuelUrl;
@@ -39,47 +48,29 @@ public class ScheduledTasks {
 	@Value("${chatfuel.botId}")
 	private String chatfuelBotId;
 
+	@Value("${obp.mock}")
+	private boolean mock;
+
+	@Autowired
+	private DataUserMock dataUserMock;
+
+	@Autowired
+	private DataUser dataUser;
+
+	@Autowired
+	private DataFormatter dataFormatter;
 	@Autowired
 	private DirectAuthenticationService authenticationService;
 	@Autowired
 	private AccountService accountService;
 	@Autowired
 	private MonetaryTransactionsService monetaryTransactionService;
-	@Value("${obp.mock}")
-	private String mock;
-
-	@Value("${obp.username}")
-	private String username;
-
-	@Value("${obp.password}")
-	private String password;
 
 	public static String chatfuelUserId;
 	/**
 	 * If bot have already sent a notification for salary today
 	 */
 	public static boolean foundSalaryOfDay = false;
-
-	@Scheduled(fixedRate = 10 * 1000)
-	public void reportCurrentTime() {
-		checkForSalary();
-		// switch ((int) (Math.random() * 3)) {
-		// case 0:
-		// pushBotPay();
-		// break;
-		// case 1:
-		// pushBotAlertVirement();
-		// break;
-		// case 2:
-		// pushBotSeuilCC();
-		// break;
-		// }
-	}
-
-	private void pushBotPay() {
-		double pay = 3600 + Math.random() * 2 * 100;
-		pushBot("notif_pay", new ParameterPay(pay));
-	}
 
 	private void checkForSalary() {
 		if (!foundSalaryOfDay) {
@@ -105,21 +96,63 @@ public class ScheduledTasks {
 		}
 	}
 
-	private void pushBotAlertVirement() {
-		double pay = 3600 + Math.random() * 2 * 100;
-		pushBot("notif_pay", new ParameterPay(pay));
+	@Scheduled(fixedRate = 10 * 1000)
+	public void reportCurrentTime() {
+		pushBotPay();
+		pushBotAlertSolde();
+		pushBotEpargne();
 	}
 
-	private void pushBotSeuilCC() {
-		double pay = 3600 + Math.random() * 2 * 100;
-		pushBot("notif_pay", new ParameterPay(pay));
+	private void pushBotPay() {
+		if (!dataUser.payArrive) {
+			if (mock) {
+				double pay = 3600 + Math.random() * 2 * 100;
+				pushBot("notif_pay", new ParameterPay(pay));
+				dataUser.payArrive = false;
+			}
+		}
+	}
+
+	private void pushBotAlertSolde() {
+		if (!dataUser.soldeAlerteAlreadyDone) {
+			if (mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
+				pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil,
+						dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+				dataUser.soldeAlerteAlreadyDone = true;
+			}
+		}
+	}
+
+	private void pushBotEpargne() {
+		if (!dataUser.epargneAlreadyDone) {
+			if (mock && dataUserMock.cc_amount > 500) {
+				pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil,
+						dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+				dataUser.epargneAlreadyDone = true;
+			}
+		}
 	}
 
 	private class ParameterPay {
-		private final double pay;
+		private final String pay;
 
 		public ParameterPay(double pay) {
-			this.pay = pay;
+			this.pay = dataFormatter.formatAmount(pay);
+		}
+	}
+
+	private class ParameterAlert {
+		private final String seuil;
+		private final String ccAmount;
+		private final String epargneAmount;
+		private final String transfertAmount;
+
+		public ParameterAlert(double seuil, double ccAmount, double epargneAmount,
+				double transfertAmount) {
+			this.seuil = dataFormatter.formatAmount(seuil);
+			this.ccAmount = dataFormatter.formatAmount(ccAmount);
+			this.epargneAmount = dataFormatter.formatAmount(epargneAmount);
+			this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
 		}
 	}
 
