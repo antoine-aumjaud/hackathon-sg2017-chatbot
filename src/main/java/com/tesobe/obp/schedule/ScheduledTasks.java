@@ -31,166 +31,179 @@ import com.tesobe.obp.utils.DataFormatter;
 @Component
 public class ScheduledTasks {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+	private static final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
 
-    @Value("${obp.username}")
-    private String username;
+	@Value("${obp.username}")
+	private String username;
 
-    @Value("${obp.password}")
-    private String password;
+	@Value("${obp.password}")
+	private String password;
 
-    @Value("${chatfuel.url}")
-    private String chatfuelUrl;
+	@Value("${chatfuel.url}")
+	private String chatfuelUrl;
 
-    @Value("${chatfuel.token}")
-    private String chatfuelToken;
+	@Value("${chatfuel.token}")
+	private String chatfuelToken;
 
-    @Value("${chatfuel.botId}")
-    private String chatfuelBotId;
+	@Value("${chatfuel.botId}")
+	private String chatfuelBotId;
 
-    @Value("${obp.mock}")
-    private boolean mock;
+	@Value("${obp.mock}")
+	private boolean mock;
 
-    @Autowired
-    private DataUserMock dataUserMock;
+	@Autowired
+	private DataUserMock dataUserMock;
 
-    @Autowired
-    private DataUser dataUser;
+	@Autowired
+	private DataUser dataUser;
 
-    @Autowired
-    private DataFormatter dataFormatter;
+	@Autowired
+	private DataFormatter dataFormatter;
 
-    @Autowired
-    private DirectAuthenticationService authenticationService;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private MonetaryTransactionsService monetaryTransactionService;
+	@Autowired
+	private DirectAuthenticationService authenticationService;
+	@Autowired
+	private AccountService accountService;
+	@Autowired
+	private MonetaryTransactionsService monetaryTransactionService;
 
-    @Scheduled(fixedRate = 10 * 1000)
-    public void reportCurrentTime() {
-        if (dataUser.chabotId == null) {
-            logger.debug("userId not defined");
-            return;
-        }
-        pushBotPay();
-        pushBotAlertSolde();
-        pushBotEpargne();
-    }
+	@Scheduled(fixedRate = 10 * 1000)
+	public void reportCurrentTime() {
+		if (dataUser.chabotId == null) {
+			logger.debug("userId not defined");
+			return;
+		}
+		pushBotPay();
+		pushBotAlertSolde();
+		pushBotEpargne();
+	}
 
-    private void pushBotPay() {
-        if(dataUser.payNotifAlreadyDone) {
-            if (mock) {
-                double pay = 3600 + Math.random() * 2 * 100;
-                pushBot("notif_pay", new ParameterPay(pay));
-            } else {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                String token = authenticationService.login(username, password);
-                List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
-                List<Transaction> transactions = monetaryTransactionService.fetchTransactionList(token,
-                        accounts.get(0));
-                // search for transaction of day and > at 1000 to get salary
-                for (Transaction transaction : transactions) {
-                    int currentAmount = transaction.getDetails().getValue().getAmount().intValue();
-                    if (currentAmount > 2000
-                            && sdf.format(transaction.getDetails().getCompletedDate()).equals(sdf.format(new Date()))) {
-                        logger.info("Salary found, launch notify");
-                        pushBot("notif_pay", new ParameterPay(currentAmount));
-                    }
-                }
-            }
-            dataUser.payNotifAlreadyDone = true;
-        }
-    }
+	private void pushBotPay() {
+		if (dataUser.payNotifAlreadyDone) {
+			if (mock) {
+				double pay = 3600 + Math.random() * 2 * 100;
+				pushBot("notif_pay", new ParameterPay(pay));
+				dataUser.payNotifAlreadyDone = true;
+			} else {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				String token = authenticationService.login(username, password);
+				List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
+				List<Transaction> transactions = monetaryTransactionService
+						.fetchTransactionList(token, accounts.get(0));
+				// search for transaction of day and > at 1000 to get salary
+				for (Transaction transaction : transactions) {
+					int currentAmount = transaction.getDetails().getValue().getAmount()
+							.intValue();
+					if (currentAmount > 900
+							&& sdf.format(transaction.getDetails().getCompletedDate())
+									.equals(sdf.format(new Date()))) {
+						logger.info("Salary found, launch notify");
+						pushBot("notif_pay", new ParameterPay(currentAmount));
+						dataUser.payNotifAlreadyDone = true;
+					}
+				}
+			}
 
-    private void pushBotAlertSolde() {
-        if (!dataUser.soldeAlerteAlreadyDone) {
-            if (mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
-                pushBot("notif_alert_solde", new ParameterAlert(dataUserMock.cc_seuil, dataUserMock.cc_amount,
-                        dataUserMock.epargne_amount, 100));
-            }
-            dataUser.soldeAlerteAlreadyDone = true;
-        }
-    }
+		}
+	}
 
-    private void pushBotEpargne() {
-        if (!dataUser.epargneAlreadyDone) {
-            if (mock && dataUserMock.cc_amount > 500) {
-                pushBot("notif_epargne", new ParameterEpargne(dataUserMock.cc_amount, 500));
-            }
-            dataUser.epargneAlreadyDone = true;
-        }
-    }
+	private void pushBotAlertSolde() {
+		if (!dataUser.soldeAlerteAlreadyDone) {
+			if (mock) {
+				if (dataUserMock.cc_amount < dataUserMock.cc_seuil) {
+					pushBot("notif_alert_solde", new ParameterAlert(dataUserMock.cc_seuil,
+							dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+				}
+			} else {
 
-    private class ParameterPay {
-        private final String pay;
+			}
+			dataUser.soldeAlerteAlreadyDone = true;
+		}
+	}
 
-        public ParameterPay(double pay) {
-            this.pay = dataFormatter.formatAmount(pay);
-        }
-    }
+	private void pushBotEpargne() {
+		if (!dataUser.epargneAlreadyDone) {
+			if (mock && dataUserMock.cc_amount > 500) {
+				pushBot("notif_epargne",
+						new ParameterEpargne(dataUserMock.cc_amount, 500));
+			}
+			dataUser.epargneAlreadyDone = true;
+		}
+	}
 
-    private class ParameterEpargne {
-        private final String ccAmount;
-        private final String transfertAmount;
+	private class ParameterPay {
+		private final String pay;
 
-        public ParameterEpargne(double ccAmount, double transfertAmount) {
-            this.ccAmount = dataFormatter.formatAmount(ccAmount);
-            this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
-        }
-    }
+		public ParameterPay(double pay) {
+			this.pay = dataFormatter.formatAmount(pay);
+		}
+	}
 
-    private class ParameterAlert {
-        private final String seuil;
-        private final String ccAmount;
-        private final String epargneAmount;
-        private final String transfertAmount;
+	private class ParameterEpargne {
+		private final String ccAmount;
+		private final String transfertAmount;
 
-        public ParameterAlert(double seuil, double ccAmount, double epargneAmount, double transfertAmount) {
-            this.seuil = dataFormatter.formatAmount(seuil);
-            this.ccAmount = dataFormatter.formatAmount(ccAmount);
-            this.epargneAmount = dataFormatter.formatAmount(epargneAmount);
-            this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
-        }
-    }
+		public ParameterEpargne(double ccAmount, double transfertAmount) {
+			this.ccAmount = dataFormatter.formatAmount(ccAmount);
+			this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
+		}
+	}
 
-    private void pushBot(String blocName, Object args) {
+	private class ParameterAlert {
+		private final String seuil;
+		private final String ccAmount;
+		private final String epargneAmount;
+		private final String transfertAmount;
 
-        String data = new Gson().toJson(args);
-        String urlstr = String.format(chatfuelUrl, chatfuelBotId, dataUser.chabotId, chatfuelToken, blocName);
-        logger.debug("Send POST data to {}", urlstr);
+		public ParameterAlert(double seuil, double ccAmount, double epargneAmount,
+				double transfertAmount) {
+			this.seuil = dataFormatter.formatAmount(seuil);
+			this.ccAmount = dataFormatter.formatAmount(ccAmount);
+			this.epargneAmount = dataFormatter.formatAmount(epargneAmount);
+			this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
+		}
+	}
 
-        byte[] postData = data.getBytes(StandardCharsets.UTF_8);
-        try {
-            URL url = new URL(urlstr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setInstanceFollowRedirects(false);
-            conn.setUseCaches(false);
-            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
-            conn.setRequestMethod("POST");
-            //Write POST data
-            try (DataOutputStream dos = new DataOutputStream(conn.getOutputStream())) {
-                dos.write(postData);
-            }
-            //Read reponse
-            String resultContent = getResultContent(conn);
-            logger.debug("Response {} ({}) :{}", conn.getResponseCode(), conn.getResponseMessage(), resultContent);
-        } catch (IOException e) {
-            logger.error("Can't do a POST", e);
-        }
-    }
+	private void pushBot(String blocName, Object args) {
 
-    private String getResultContent(HttpURLConnection conn) throws IOException {
-        StringBuilder result = new StringBuilder();
-        try (BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            String line;
-            while ((line = rd.readLine()) != null) {
-                result.append(line);
-            }
-        }
-        return result.toString();
-    }
+		String data = new Gson().toJson(args);
+		String urlstr = String.format(chatfuelUrl, chatfuelBotId, dataUser.chabotId,
+				chatfuelToken, blocName);
+		logger.debug("Send POST data to {}", urlstr);
+
+		byte[] postData = data.getBytes(StandardCharsets.UTF_8);
+		try {
+			URL url = new URL(urlstr);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setInstanceFollowRedirects(false);
+			conn.setUseCaches(false);
+			conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+			conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
+			conn.setRequestMethod("POST");
+			// Write POST data
+			try (DataOutputStream dos = new DataOutputStream(conn.getOutputStream())) {
+				dos.write(postData);
+			}
+			// Read reponse
+			String resultContent = getResultContent(conn);
+			logger.debug("Response {} ({}) :{}", conn.getResponseCode(),
+					conn.getResponseMessage(), resultContent);
+		} catch (IOException e) {
+			logger.error("Can't do a POST", e);
+		}
+	}
+
+	private String getResultContent(HttpURLConnection conn) throws IOException {
+		StringBuilder result = new StringBuilder();
+		try (BufferedReader rd = new BufferedReader(
+				new InputStreamReader(conn.getInputStream()))) {
+			String line;
+			while ((line = rd.readLine()) != null) {
+				result.append(line);
+			}
+		}
+		return result.toString();
+	}
 
 }
