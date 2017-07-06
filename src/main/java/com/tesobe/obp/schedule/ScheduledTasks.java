@@ -86,7 +86,7 @@ public class ScheduledTasks {
 				pushBot("notif_pay", new ParameterPay(pay));
 				dataUser.payNotifAlreadyDone = true;
 			} else {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
 				String token = authenticationService.login(username, password);
 				List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
 				logger.info("On récupère " + accounts.size() + " comptes du pushBotPay.");
@@ -106,6 +106,7 @@ public class ScheduledTasks {
 						logger.info("Salary found, launch notify");
 						pushBot("notif_pay", new ParameterPay(currentAmount));
 						dataUser.payNotifAlreadyDone = true;
+						break;
 					}
 				}
 			}
