@@ -65,7 +65,6 @@ public class ChatbotTransactionRessource {
 
 	@RequestMapping("/addTransaction")
 	public ResponseEntity addTransaction(@RequestParam("montant") String montant,
-			@RequestParam("IBAN") String iban,
 			@RequestParam("description") String description) {
 		if (mock) {
 			double amount = Double.parseDouble(montant);
