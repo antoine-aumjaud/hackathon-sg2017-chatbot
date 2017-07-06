@@ -67,19 +67,20 @@ public class ChatbotTransactionRessource {
 	public ResponseEntity addTransaction(@RequestParam("montant") String montant,
 			@RequestParam("IBAN") String iban,
 			@RequestParam("description") String description) {
-		// On se connecte avec le user source
-		String token = authenticationService.login(username, password);
-		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
-		monetaryTransactionService.addTransaction(token, account, description, montant,
-				null);
+		if (mock) {
+			double amount = Double.parseDouble(montant);
 
-		log.debug("Set CC montant : " + montant);
-		double amount = Double.parseDouble(montant);
-		log.debug("Set CC amount : " + amount);
-		dataUserMock.cc_amount += amount;
-		dataUserMock.epargne_amount -= amount;
-		dataUser.epargneAlreadyDone = false;
-		dataUser.soldeAlerteAlreadyDone = false;
+			dataUserMock.cc_amount += amount;
+			// dataUserMock.epargne_amount -= amount;
+			dataUser.epargneAlreadyDone = false;
+			dataUser.soldeAlerteAlreadyDone = false;
+		} else {
+			// On se connecte avec le user source
+			String token = authenticationService.login(username, password);
+			Account account = accountService.fetchPrivateAccounts(token, true).get(0);
+			monetaryTransactionService.addTransaction(token, account, description,
+					montant, null);
+		}
 		return ResponseEntity.ok(
 				"<h1 style=\"color:green\">Votre demande de virement a bien été prise en compte");
 	}
@@ -89,7 +90,8 @@ public class ChatbotTransactionRessource {
 			@RequestParam("transfert_type") String transfertType) {
 		if (mock) {
 			double iamount = Double.parseDouble(amount);
-			if (transfertType.equals("cc"))
+
+			if (transfertType.equals("epargne"))
 				iamount = -iamount;
 			dataUserMock.cc_amount += iamount;
 			dataUserMock.epargne_amount -= iamount;
@@ -99,12 +101,11 @@ public class ChatbotTransactionRessource {
 			Account accountCC = accounts.get(0);
 			Account accountEpargne = accounts.get(1);
 			if (transfertType.equals("cc")) { // epargne->cc
-				monetaryTransactionService.addTransaction(token, accountEpargne,
-						"automatic cc->epargne", amount, accountCC);
-			} else {
 				monetaryTransactionService.addTransaction(token, accountCC,
-						"Epargne depuis CC", amount, accountEpargne);
-
+						"automatic cc->epargne", amount, accountEpargne);
+			} else {
+				monetaryTransactionService.addTransaction(token, accountEpargne,
+						"Epargne depuis CC", amount, accountCC);
 			}
 		}
 		return ResponseEntity.ok("done");

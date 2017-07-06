@@ -56,8 +56,15 @@ public class MonetaryTransactionsService {
 
 	public List<Transaction> addTransaction(String token, Account account, String desc,
 			String amount, Account accountSource) {
-		String sourceToken = authenticationService.login(usernameTransaction,
-				passwordTransaction);
+		String sourceToken = "";
+		if (accountSource == null) {
+			sourceToken = authenticationService.login(usernameTransaction,
+					passwordTransaction);
+		} else {
+			// If there is a sourceAccount then its an internal transfer
+			sourceToken = token;
+		}
+
 		String viewId = getFirstViewOfAccount(sourceToken, account);
 		String addTransactionsUrl = "";
 		if (accountSource != null) {
