@@ -54,11 +54,11 @@ public class ScheduledTasks {
     }
 
     private void pushBotPay() {
-        if(!dataUser.payArrive) {
+        if(dataUser.payNotifAlreadyDone) {
             if(mock) {
                 double pay = 3600 + Math.random() * 2 * 100;
                 pushBot("notif_pay", new ParameterPay(pay));
-                dataUser.payArrive = false;
+                dataUser.payNotifAlreadyDone = false;
             }
         }
     }
@@ -76,8 +76,7 @@ public class ScheduledTasks {
     private void pushBotEpargne() {
         if(!dataUser.epargneAlreadyDone) {
             if(mock && dataUserMock.cc_amount > 500) {
-                pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil, 
-                    dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+                pushBot("notif_epargne", new ParameterEpargne(dataUserMock.cc_amount, 500));
                 dataUser.epargneAlreadyDone = true;
             }
         }
@@ -87,6 +86,14 @@ public class ScheduledTasks {
         private final String pay;
         public ParameterPay(double pay) {
             this.pay = dataFormatter.formatAmount(pay);
+        }
+    }
+    private class ParameterEpargne {
+        private final String ccAmount;
+        private final String transfertAmount;
+        public ParameterEpargne(double ccAmount, double transfertAmount) {
+            this.ccAmount = dataFormatter.formatAmount(ccAmount);
+            this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
         }
     }
     private class ParameterAlert {
