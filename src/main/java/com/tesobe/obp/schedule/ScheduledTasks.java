@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
+import com.tesobe.obp.botclient.DataUser;
 import com.tesobe.obp.botclient.DataUserMock;
 import com.tesobe.obp.utils.DataFormatter;
 
@@ -33,49 +34,71 @@ public class ScheduledTasks {
     @Value("${chatfuel.botId}")
     private String chatfuelBotId;
 
-	public static String chatfuelUserId; //1194160284036837
+	@Value("${obp.mock}")
+	private boolean mock;
 
 	@Autowired
 	private DataUserMock dataUserMock;
 
 	@Autowired
+	private DataUser dataUser;
+
+	@Autowired
 	private DataFormatter dataFormatter;
 
-
-    @Scheduled(fixedRate = 10 * 100000)
+    @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {
-        switch ((int) (Math.random() * 3)) {
-        case 0:
-            pushBotPay();
-            break;
-        case 1:
-            pushBotAlertVirement();
-            break;
-        case 2:
-            pushBotSeuilCC();
-            break;
-        }
+        pushBotPay();
+        pushBotAlertSolde();
+        pushBotEpargne();
     }
 
     private void pushBotPay() {
-        double pay = 3600 + Math.random() * 2 * 100;
-        pushBot("notif_pay", new ParameterPay(pay));
+        if(!dataUser.payArrive) {
+            if(mock) {
+                double pay = 3600 + Math.random() * 2 * 100;
+                pushBot("notif_pay", new ParameterPay(pay));
+                dataUser.payArrive = false;
+            }
+        }
     }
 
-    private void pushBotAlertVirement() {
-        double pay = 3600 + Math.random() * 2 * 100;
-        pushBot("notif_pay", new ParameterPay(pay));
+    private void pushBotAlertSolde() {
+        if(!dataUser.soldeAlerteAlreadyDone) {
+            if(mock && dataUserMock.cc_amount < dataUserMock.cc_seuil) {
+                pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil, 
+                    dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+                dataUser.soldeAlerteAlreadyDone = true;
+            }
+        }
     }
 
-    private void pushBotSeuilCC() {
-        double pay = 3600 + Math.random() * 2 * 100;
-        pushBot("notif_pay", new ParameterPay(pay));
+    private void pushBotEpargne() {
+        if(!dataUser.epargneAlreadyDone) {
+            if(mock && dataUserMock.cc_amount > 500) {
+                pushBot("notif_alert", new ParameterAlert(dataUserMock.cc_seuil, 
+                    dataUserMock.cc_amount, dataUserMock.epargne_amount, 100));
+                dataUser.epargneAlreadyDone = true;
+            }
+        }
     }
 
     private class ParameterPay {
         private final String pay;
         public ParameterPay(double pay) {
             this.pay = dataFormatter.formatAmount(pay);
+        }
+    }
+    private class ParameterAlert {
+        private final String seuil;
+        private final String ccAmount;
+        private final String epargneAmount;
+        private final String transfertAmount;
+        public ParameterAlert(double seuil, double ccAmount, double epargneAmount, double transfertAmount) {
+            this.seuil = dataFormatter.formatAmount(seuil);
+            this.ccAmount = dataFormatter.formatAmount(ccAmount);
+            this.epargneAmount = dataFormatter.formatAmount(epargneAmount);
+            this.transfertAmount = dataFormatter.formatAmount(transfertAmount);
         }
     }
 

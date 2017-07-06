@@ -14,5 +14,7 @@ public class DataUserMock {
     public double cc_last_invoice_engie = 542;
     
     public double cc_seuil              = 100;
+
+    public double pay_amount            = 2205;
     
 }

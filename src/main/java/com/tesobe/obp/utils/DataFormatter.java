@@ -16,8 +16,7 @@ public class DataFormatter {
 		decimalFormater.setNegativePrefix("- ");
 		decimalFormater.setPositivePrefix("+ ");
 		decimalFormater.setGroupingSize(3);
-		decimalFormater.setGroupingUsed(true);
-		
+		decimalFormater.setGroupingUsed(true);		
 		decimalFormater.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.FRANCE));
 
 	}
