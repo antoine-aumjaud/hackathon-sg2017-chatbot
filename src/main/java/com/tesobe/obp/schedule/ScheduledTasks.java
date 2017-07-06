@@ -68,7 +68,7 @@ public class ScheduledTasks {
 
 	public static String chatfuelUserId;
 	/**
-	 * If bot have already sent a notification for salary today
+	 * If bot have already sent a notification for salary today.
 	 */
 	public static boolean foundSalaryOfDay = false;
 
