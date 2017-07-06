@@ -64,7 +64,9 @@ public class ChatbotTransactionRessource {
 		Account account = accountService.fetchPrivateAccounts(token, true).get(0);
 		monetaryTransactionService.addTransaction(token, account, description, montant);
 
+log.debug("Set CC montant : " + montant);
 		double amount = Double.parseDouble(montant);
+log.debug("Set CC amount : " + amount);
 		dataUserMock.cc_amount += amount;
 		dataUserMock.epargne_amount -= amount;
         dataUser.epargneAlreadyDone = false;
@@ -106,9 +108,9 @@ public class ChatbotTransactionRessource {
 			message.addMessage(
 					AttachmentDTO.createImageAttachement("https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
 			message.addText("- vous avez payé votre facture EDF (" + dataFormatter.formatAmount(44.5) + " €).");
-			message.addText("- vous avez payé " + dataFormatter.formatAmount(79)
-					+ " € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.");
-			message.addMessage(new QuickReplyDTO("Ajouter aux tiers connus", "add_tiers"));
+			message.addText("- vous avez payé " + dataFormatter.formatAmount(79) + " € hier à 'Histoire De'.");
+			//message.addText("C'est votre première transaction avec ce tiers.");
+			//message.addMessage(new QuickReplyDTO("Ajouter aux tiers connus", "add_tiers"));
 			return ResponseEntity.ok(message);
 		} else {
 			String token = authenticationService.login(username, password);
