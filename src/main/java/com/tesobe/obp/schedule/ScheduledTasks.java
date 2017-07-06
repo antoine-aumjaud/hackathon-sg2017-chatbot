@@ -101,10 +101,16 @@ public class ScheduledTasks {
 					int currentAmount = transaction.getDetails().getValue().getAmount()
 							.intValue();
 					logger.info("Transaction " + transaction.getDetails().getDescription()
-							+ " montant : " + currentAmount);
+							+ " montant : " + currentAmount + "Condition salaire : "
+							+ (currentAmount > 900 && sdf
+									.format(transaction.getDetails().getCompletedDate())
+									.compareTo(datatimeStart) > 0)
+							+ " / compare to "
+							+ sdf.format(transaction.getDetails().getCompletedDate())
+									.compareTo(datatimeStart));
 					if (currentAmount > 900
 							&& sdf.format(transaction.getDetails().getCompletedDate())
-									.compareTo(datatimeStart) > 1) {
+									.compareTo(datatimeStart) > 0) {
 						logger.info("Salary found, launch notify");
 						pushBot("notif_pay", new ParameterPay(currentAmount));
 						dataUser.payNotifAlreadyDone = true;
