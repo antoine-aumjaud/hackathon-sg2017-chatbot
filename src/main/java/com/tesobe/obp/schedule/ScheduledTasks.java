@@ -42,7 +42,7 @@ public class ScheduledTasks {
 	private DataFormatter dataFormatter;
 
 
-    @Scheduled(fixedRate = 10 * 1000)
+    @Scheduled(fixedRate = 10 * 100000)
     public void reportCurrentTime() {
         switch ((int) (Math.random() * 3)) {
         case 0:
