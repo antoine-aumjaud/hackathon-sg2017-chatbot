@@ -16,7 +16,9 @@ import com.tesobe.obp.account.Account;
 import com.tesobe.obp.account.AccountService;
 import com.tesobe.obp.account.Transaction;
 import com.tesobe.obp.auth.DirectAuthenticationService;
+import com.tesobe.obp.botclient.dto.*;
 import com.tesobe.obp.transaction.MonetaryTransactionsService;
+import com.tesobe.obp.utils.DataFormatter;
 
 /**
  * REST controller for managing Asset.
@@ -28,13 +30,18 @@ public class ChatbotTransactionRessource {
 
 	@Autowired
 	private DirectAuthenticationService authenticationService;
+
 	@Autowired
 	private AccountService accountService;
+
 	@Autowired
 	private MonetaryTransactionsService monetaryTransactionService;
 
+	@Autowired
+	private DataFormatter dataFormatter;
+
 	@Value("${obp.mock}")
-	private String mock;
+	private boolean mock;
 
 	@Value("${obp.username}")
 	private String username;
@@ -49,30 +56,15 @@ public class ChatbotTransactionRessource {
 	public ResponseEntity test() throws URISyntaxException {
 
 		MessageDTO message = new MessageDTO();
-		TextDTO texte = new TextDTO();
 		String currentDate = "";
-		texte.setText(
-				"Voici la liste des dernières transactions sur votre compte courant :\n");
-		message.getMessages().add(texte);
-		if (mock.equals("true")) {
-
-			texte = new TextDTO();
-			texte.setText("votre salaire (+ 3 205,3 €) est arrivé hier!.");
-			message.getMessages().add(texte);
-			AttachmentDTO attachmentDTO = AttachmentDTO.createImageAttachement(
-					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif");
-			message.getMessages().add(attachmentDTO);
-			texte = new TextDTO();
-			texte.setText(
-					"vous avez payé votre facture EDF 44,5 €. Elle est en baisse par rapport au mois dernier (39,5 €)");
-			message.getMessages().add(texte);
-			texte = new TextDTO();
-			texte.setText(
-					"vous avez payé 22 € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.");
-			message.getMessages().add(texte);
-			QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus",
-					"Default Block");
-			message.getMessages().add(quickReplyDTO);
+		message.addText("Voici la liste des dernières transactions sur votre compte courant :\n");
+		if (mock) {
+			message.addText("votre salaire (+ 3 000 €) est arrivé hier!.");
+			message.addMessage(AttachmentDTO.createImageAttachement(
+					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
+			message.addText("vous avez payé votre facture EDF (+ 44,5 €).");
+			message.addText("vous avez payé 22 € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.vous avez payé 22 € hier à 'Histoire De'. C'est votre première transaction avec ce tiers.");
+			message.addMessage(new QuickReplyDTO("ajouter aux tiers connus", "Default Block"));
 			return ResponseEntity.ok(message);
 		} else {
 			String token = authenticationService.login(username, password);
@@ -80,26 +72,22 @@ public class ChatbotTransactionRessource {
 			List<Transaction> transactions = monetaryTransactionService
 					.fetchTransactionList(token, accounts.get(0));
 			for (int i = 0; ((i < transactions.size()) && (i < 3)); i++) {
-				texte = new TextDTO();
 				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 				transactions.get(i).getDetails().getCompletedDate();
-				currentDate = formatter
-						.format(transactions.get(i).getDetails().getCompletedDate());
-				texte.setText(currentDate + " : "
-						+ transactions.get(i).getDetails().getDescription() + " ("
-						+ transactions.get(i).getDetails().getValue().getAmount() + ")");
+				currentDate = dataFormatter.formatDate(transactions.get(i).getDetails().getCompletedDate());
 				// if > at 1000 then put gif
-				message.getMessages().add(texte);
+				message.addText(currentDate + " : "
+						+ transactions.get(i).getDetails().getDescription() //
+						+ " ("
+						+ dataFormatter.formatAmount(transactions.get(i).getDetails().getValue().getAmount()) //
+						+ ")");
 				if (transactions.get(i).getDetails().getValue().getAmount().toBigInteger()
 						.intValue() > 1000) {
-					AttachmentDTO attachmentDTO = AttachmentDTO.createImageAttachement(
-							"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif");
-					message.getMessages().add(attachmentDTO);
+					message.addMessage(AttachmentDTO.createImageAttachement(
+							"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
 				}
 			}
-			QuickReplyDTO quickReplyDTO = new QuickReplyDTO("ajouter aux tiers connus",
-					"Default Block");
-			message.getMessages().add(quickReplyDTO);
+			message.addMessage(new QuickReplyDTO("ajouter aux tiers connus", "Default Block"));
 			return ResponseEntity.ok(message);
 		}
 

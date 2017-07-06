@@ -30,7 +30,7 @@ public class ScheduledTasks {
     @Value("${chatfuel.botId}")
     private String chatfuelBotId;
 
-	public static String chatfuelUserId;
+	public static String chatfuelUserId; //1194160284036837
 
     @Scheduled(fixedRate = 10 * 1000)
     public void reportCurrentTime() {

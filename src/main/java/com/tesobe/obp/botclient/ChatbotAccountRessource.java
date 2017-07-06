@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tesobe.obp.account.Account;
 import com.tesobe.obp.account.AccountService;
 import com.tesobe.obp.auth.DirectAuthenticationService;
+import com.tesobe.obp.botclient.dto.*;
+import com.tesobe.obp.utils.DataFormatter;
 
 /**
  * REST controller for managing Asset.
@@ -23,16 +25,20 @@ public class ChatbotAccountRessource {
 
 	private final Logger log = LoggerFactory.getLogger(ChatbotAccountRessource.class);
 
-    public ChatbotAccountRessource() {
-    }
-
 	@Autowired
 	private DirectAuthenticationService authenticationService;
+
 	@Autowired
 	private AccountService accountService;
 
+	@Autowired
+	private DataUserMock dataUserMock;
+
+	@Autowired
+	private DataFormatter dataFormatter;
+
 	@Value("${obp.mock}")
-	private String mock;
+	private boolean mock;
 
 	@Value("${obp.username}")
 	private String username;
@@ -43,25 +49,22 @@ public class ChatbotAccountRessource {
 	@RequestMapping("/bot/account")
 	public ResponseEntity test() throws URISyntaxException {
 		MessageDTO message = new MessageDTO();
-		TextDTO texte = new TextDTO();
 		String messageContent = "Voici la liste de vos comptes:\n";
-		texte = new TextDTO();
-		if (mock.equals("true")) {
-			messageContent += "compte chèques: + 1 346 €\n"
-					+ "épargne immobilier: + 10 493 €\n" + "prêt immobilier: - 139 696 €";
+		if (mock) {
+			messageContent += "- compte chèques: " + dataFormatter.formatAmount(dataUserMock.cc_amount) + " €\n" //
+					+ "- épargne immobilier: " + dataFormatter.formatAmount(dataUserMock.epargne_amount) + " €\n" //
+					+ "- prêt immobilier: " + dataFormatter.formatAmount(dataUserMock.credit_amount) + " €"; 
 		} else {
 			String token = authenticationService.login(username, password);
 			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
 			for (Account account : accounts) {
 				messageContent += "Votre compte " + account.getLabel() + " de type "
 						+ account.getType() + " a un solde de : "
-						+ account.getBalance().getAmount() + " "
+						+ dataFormatter.formatAmount(account.getBalance().getAmount()) + " "
 						+ account.getBalance().getCurrency() + "\n";
-
 			}
 		}
-		texte.setText(messageContent);
-		message.getMessages().add(texte);
+		message.addText(messageContent);
 		return ResponseEntity.ok(message);
 	}
 
