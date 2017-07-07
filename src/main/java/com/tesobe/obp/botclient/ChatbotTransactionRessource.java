@@ -16,6 +16,7 @@ import com.tesobe.obp.account.Account;
 import com.tesobe.obp.account.AccountService;
 import com.tesobe.obp.account.Transaction;
 import com.tesobe.obp.auth.DirectAuthenticationService;
+import com.tesobe.obp.botclient.DataUserMock.FakeTransaction;
 import com.tesobe.obp.botclient.dto.AttachmentDTO;
 import com.tesobe.obp.botclient.dto.MessageDTO;
 import com.tesobe.obp.botclient.dto.QuickReplyDTO;
@@ -69,8 +70,7 @@ public class ChatbotTransactionRessource {
 		if (mock) {
 			double amount = Double.parseDouble(montant);
 
-			dataUserMock.cc_amount += amount;
-			// dataUserMock.epargne_amount -= amount;
+			dataUserMock.addTransaction("07/07", description, amount);
 			dataUser.epargneAlreadyDone = false;
 			dataUser.soldeAlerteAlreadyDone = false;
 		} else {
@@ -92,8 +92,8 @@ public class ChatbotTransactionRessource {
 
 			if (transfertType.equals("epargne"))
 				iamount = -iamount;
-			dataUserMock.cc_amount += iamount;
 			dataUserMock.epargne_amount -= iamount;
+			dataUserMock.addTransaction("07/07", "epargne", iamount);
 		} else {
 			String token = authenticationService.login(username, password);
 			List<Account> accounts = accountService.fetchPrivateAccounts(token, true);
@@ -116,14 +116,23 @@ public class ChatbotTransactionRessource {
 		message.addText(
 				"Voici la liste des dernières transactions sur votre compte courant :\n");
 		if (mock) {
-			message.addText("- votre salaire (" + dataFormatter.formatAmount(3000)
-					+ " €) est arrivé hier!.");
-			message.addMessage(AttachmentDTO.createImageAttachement(
-					"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
-			message.addText("- vous avez payé votre facture EDF ("
-					+ dataFormatter.formatAmount(44.5) + " €).");
-			message.addText("- vous avez payé " + dataFormatter.formatAmount(79)
-					+ " € hier à 'Histoire De'.");
+			for (FakeTransaction t : dataUserMock.transactions) {
+			message.addText(String.format("%s %s: %s",
+					t.date,
+					dataFormatter.formatAmount(t.amount),
+					t.label
+				));
+				
+			}
+			
+			//message.addText("- votre salaire (" + dataFormatter.formatAmount(3000)
+			//		+ " €) est arrivé hier!.");
+			//message.addMessage(AttachmentDTO.createImageAttachement(
+			//		"https://media.giphy.com/media/l3q2tBVPkO6PHnTJC/200w_d.gif"));
+			//message.addText("- vous avez payé votre facture EDF ("
+			//		+ dataFormatter.formatAmount(44.5) + " €).");
+			//message.addText("- vous avez payé " + dataFormatter.formatAmount(79)
+			//		+ " € hier à 'Histoire De'.");
 			// message.addText("C'est votre première transaction avec ce
 			// tiers.");
 			// message.addMessage(new QuickReplyDTO("Ajouter aux tiers connus",
