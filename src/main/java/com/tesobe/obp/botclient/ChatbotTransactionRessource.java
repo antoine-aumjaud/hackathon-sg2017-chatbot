@@ -69,7 +69,8 @@ public class ChatbotTransactionRessource {
 			@RequestParam("description") String description) {
 		if (mock) {
 			double amount = Double.parseDouble(montant);
-
+dataUserMock.cc_last_pay = amount;
+dataUser.payNotifAlreadyDone = false;
 			dataUserMock.addTransaction("07/07", description, amount);
 			dataUser.epargneAlreadyDone = false;
 			dataUser.soldeAlerteAlreadyDone = false;

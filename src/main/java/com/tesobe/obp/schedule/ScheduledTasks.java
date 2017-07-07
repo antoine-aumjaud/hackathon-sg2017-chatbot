@@ -84,7 +84,7 @@ public class ScheduledTasks {
 		logger.info("Enter pushBotPay, payNotify : " + dataUser.payNotifAlreadyDone);
 		if (!dataUser.payNotifAlreadyDone) {
 			if (mock) {
-				double pay = 3600 + Math.random() * 2 * 100;
+				double pay = dataUserMock.cc_last_pay;
 				pushBot("notif_pay", new ParameterPay(pay));
 				dataUser.payNotifAlreadyDone = true;
 			} else {
