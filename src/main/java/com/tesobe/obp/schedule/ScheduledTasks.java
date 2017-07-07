@@ -140,7 +140,7 @@ public class ScheduledTasks {
 		if (!dataUser.epargneAlreadyDone) {
 			if (mock && dataUserMock.cc_amount > 500) {
 				pushBot("notif_epargne",
-						new ParameterEpargne(dataUserMock.cc_amount, 500));
+						new ParameterEpargne(dataUserMock.cc_amount, 50));
 			}
 			dataUser.epargneAlreadyDone = true;
 		}
