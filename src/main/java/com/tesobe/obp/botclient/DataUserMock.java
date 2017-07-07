@@ -22,9 +22,9 @@ public class DataUserMock {
 
     public List<FakeTransaction> transactions = new ArrayList<>();
     {
-        transactions.add(new FakeTransaction("06/07", "Lidl Supermarché", 63));
-        transactions.add(new FakeTransaction("05/07", "LDLC - casque gamer", 145));
         transactions.add(new FakeTransaction("01/07", "Lidl Supermarché", 33));
+        transactions.add(new FakeTransaction("05/07", "LDLC - casque gamer", 145));
+        transactions.add(new FakeTransaction("06/07", "Lidl Supermarché", 63));
     }
     public void addTransaction(String date, String label, double amount) {
         cc_amount += amount;
