@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class DataUser  {
     public String chabotId  ; //1194160284036837
 
-    public boolean payNotifAlreadyDone, 
-        epargneAlreadyDone, 
+    public boolean payNotifAlreadyDone=true; 
+        public boolean epargneAlreadyDone, 
         soldeAlerteAlreadyDone;
 }
